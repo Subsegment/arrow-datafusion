@@ -266,6 +266,34 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
                 };
                 Ok(DataType::Timestamp(TimeUnit::Nanosecond, tz))
             }
+            SQLDataType::Timestamp(Some(6), tz_info) => {
+                let tz = if matches!(tz_info, TimezoneInfo::Tz)
+                    || matches!(tz_info, TimezoneInfo::WithTimeZone)
+                {
+                    // Timestamp With Time Zone
+                    // INPUT : [SQLDataType]   TimestampTz + [RuntimeConfig] Time Zone
+                    // OUTPUT: [ArrowDataType] Timestamp<TimeUnit, Some(Time Zone)>
+                    self.schema_provider.options().execution.time_zone.clone()
+                } else {
+                    // Timestamp Without Time zone
+                    None
+                };
+                Ok(DataType::Timestamp(TimeUnit::Microsecond, tz))
+            }
+            SQLDataType::Timestamp(Some(3), tz_info) => {
+                let tz = if matches!(tz_info, TimezoneInfo::Tz)
+                    || matches!(tz_info, TimezoneInfo::WithTimeZone)
+                {
+                    // Timestamp With Time Zone
+                    // INPUT : [SQLDataType]   TimestampTz + [RuntimeConfig] Time Zone
+                    // OUTPUT: [ArrowDataType] Timestamp<TimeUnit, Some(Time Zone)>
+                    self.schema_provider.options().execution.time_zone.clone()
+                } else {
+                    // Timestamp Without Time zone
+                    None
+                };
+                Ok(DataType::Timestamp(TimeUnit::Millisecond, tz))
+            }
             SQLDataType::Date => Ok(DataType::Date32),
             SQLDataType::Time(None, tz_info) => {
                 if matches!(tz_info, TimezoneInfo::None)
